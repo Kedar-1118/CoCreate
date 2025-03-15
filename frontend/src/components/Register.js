@@ -6,69 +6,86 @@ const Register = () => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const [error, setError] = useState(''); // State to handle error message
+    const [otp, setOtp] = useState('');
+    const [error, setError] = useState('');
+    const [otpSent, setOtpSent] = useState(false);
+    const [successMessage, setSuccessMessage] = useState('');
     const navigate = useNavigate();
 
-    const handleRegister = async (e) => {
+    // 📩 **Send OTP**
+    const handleSendOTP = async (e) => {
         e.preventDefault();
-        setError(''); // Clear any previous errors
+        setError('');
         try {
-            const { data } = await axios.post('http://localhost:5000/api/auth/register', { name, email, password });
-            localStorage.setItem('token', data.token);
-            navigate('/login'); // Redirect to login if registration is successful
+            await axios.post('http://localhost:5000/api/auth/send-otp', { email });
+            setOtpSent(true);
+            setSuccessMessage('OTP sent to your email. Please check and enter below.');
         } catch (error) {
-            if (error.response && error.response.data && error.response.data.message) {
-                setError(error.response.data.message); // Set error message if registration fails
-            } else {
-                setError('An unexpected error occurred. Please try again later.');
-            }
+            setError(error.response?.data?.message || 'Error sending OTP. Try again.');
+        }
+    };
+
+    // ✅ **Verify OTP & Register**
+    const handleVerifyOTP = async (e) => {
+        e.preventDefault();
+        setError('');
+        try {
+            const { data } = await axios.post('http://localhost:5000/api/auth/verify-otp', { name, email, password, otp });
+            localStorage.setItem('token', data.token);
+
+            setSuccessMessage('Registration successful! Redirecting to login...');
+            setTimeout(() => navigate('/login'), 3000);
+        } catch (error) {
+            setError(error.response?.data?.message || 'Invalid OTP. Try again.');
         }
     };
 
     return (
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-500 to-red-400 p-6">
+            <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md text-center">
+                <h2 className="text-3xl font-bold text-blue-700 mb-6">Register</h2>
+                {error && <p className="text-red-500 mb-4">{error}</p>}
+                {successMessage && <p className="text-green-500 mb-4">{successMessage}</p>}
 
-        <div className="container bg-blue-300 pb-3  px-2 rounded-lg ">
-            <h2 className="my-4 pt-4 text-blue-700 ">Register</h2>
-            <form onSubmit={handleRegister}>
-                <div className="mb-3">
-                    <label htmlFor="name" className="form-label">Username</label>
-                    <input
-                        type="text"
-                        className="form-control"
-                        id="name"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        required
-                    />
-                </div>
-                <div className="mb-3">
-                    <label htmlFor="email" className="form-label">Email address</label>
-                    <input
-                        type="email"
-                        className="form-control"
-                        id="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                        required
-                    />
-                </div>
-                <div className="mb-3">
-                    <label htmlFor="password" className="form-label">Password</label>
-                    <input
-                        type="password"
-                        className="form-control"
-                        id="password"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
-                        required
-                    />
-                </div>
-                <button type="submit" className="btn btn-primary">Register</button>
-            </form>
-            {error && <p className="text-danger mt-3">{error}</p>} {/* Display error message */}
-            <p>Already have an account? <a href="/">Login</a></p>
+                {!otpSent ? (
+                    // Step 1: Collect User Details & Send OTP
+                    <form onSubmit={handleSendOTP} className="space-y-4">
+                        <div>
+                            <label htmlFor="name" className="block text-left font-medium">Username</label>
+                            <input type="text" id="name" value={name} onChange={(e) => setName(e.target.value)} required
+                                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                        </div>
+                        <div>
+                            <label htmlFor="email" className="block text-left font-medium">Email Address</label>
+                            <input type="email" id="email" value={email} onChange={(e) => setEmail(e.target.value)} required
+                                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                        </div>
+                        <div>
+                            <label htmlFor="password" className="block text-left font-medium">Password</label>
+                            <input type="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} required
+                                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                        </div>
+                        <button type="submit" className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700">
+                            Send OTP
+                        </button>
+                    </form>
+                ) : (
+                    // Step 2: Enter OTP & Verify
+                    <form onSubmit={handleVerifyOTP} className="space-y-4">
+                        <div>
+                            <label htmlFor="otp" className="block text-left font-medium">Enter OTP</label>
+                            <input type="text" id="otp" value={otp} onChange={(e) => setOtp(e.target.value)} required
+                                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                        </div>
+                        <button type="submit" className="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700">
+                            Verify OTP & Register
+                        </button>
+                    </form>
+                )}
+
+                <p className="mt-4 text-gray-600">Already have an account? <a href="/login" className="text-blue-600 hover:underline">Login</a></p>
+            </div>
         </div>
-
     );
 };
 

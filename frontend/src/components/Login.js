@@ -12,40 +12,33 @@ const Login = () => {
         e.preventDefault();
         try {
             const { data } = await axios.post('http://localhost:5000/api/auth/login', { email, password });
-
-            // Save user data in local storage
-            console.log(data.username)
             localStorage.setItem('user', JSON.stringify({ username: data.username, token: data.token }));
-
-            // Navigate to dashboard
             navigate('/dashboard');
         } catch (error) {
-            if (error.response && error.response.data && error.response.data.message) {
-                setError(error.response.data.message);
-                navigate('/login');
-            } else {
-                setError('An unexpected error occurred. Please try again later.');
-                navigate('/login');
-            }
+            setError(error.response?.data?.message || 'An unexpected error occurred. Please try again.');
         }
     };
 
     return (
-        <div className="container bg-blue-300 pb-3  px-2 rounded-lg ">
-            <h2 className="my-4 pt-4 text-blue-700 ">Login</h2>
-            <form onSubmit={handleLogin}>
-                <div className="mb-3">
-                    <label htmlFor="email" className="form-label">Email address</label>
-                    <input type="email" className="form-control  text-white" id="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
-                </div>
-                <div className="mb-3">
-                    <label htmlFor="password" className="form-label">Password</label>
-                    <input type="password" className="form-control" id="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-                </div>
-                <button type="submit" className="btn btn-primary">Login</button>
-            </form>
-            {error && <p className="text-danger mt-3">{error}</p>} {/* Display error message */}
-            <p>Don't have an account? <a href="/register">Register</a></p>
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-500 to-red-400 p-6">
+            <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-md text-center">
+                <h2 className="text-3xl font-bold text-blue-700 mb-6">Login</h2>
+                {error && <p className="text-red-500 mb-4">{error}</p>}
+                <form onSubmit={handleLogin} className="space-y-4">
+                    <div>
+                        <label htmlFor="email" className="block text-left font-medium">Email Address</label>
+                        <input type="email" id="email" value={email} onChange={(e) => setEmail(e.target.value)} required
+                            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    </div>
+                    <div>
+                        <label htmlFor="password" className="block text-left font-medium">Password</label>
+                        <input type="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} required
+                            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                    </div>
+                    <button type="submit" className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700">Login</button>
+                </form>
+                <p className="mt-4 text-gray-600">Don't have an account? <a href="/register" className="text-blue-600 hover:underline">Register</a></p>
+            </div>
         </div>
     );
 };

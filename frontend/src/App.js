@@ -7,10 +7,11 @@ import Navbar from './components/Navbar';
 import DocumentForm from './components/DocumentForm';
 import DocumentDetails from './components/DocumentDetails';
 import LandingPage from './components/LandingPage';
+import Footer from './components/Footer';
 
 function App() {
     return (
-        <Router >
+        <Router  >
             <Navbar />
             <Routes>
                 <Route path="/" element={<LandingPage />} />
@@ -20,6 +21,7 @@ function App() {
                 <Route path="/document/:id" element={<DocumentDetails />} />
                 <Route path="/document/new" element={<DocumentForm />} />
             </Routes>
+            <Footer class=" bottom-0 left-0 right-0" />
         </Router>
     );
 }

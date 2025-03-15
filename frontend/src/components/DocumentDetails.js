@@ -3,11 +3,8 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { getDocumentById, updateDocument, deleteDocument } from '../services/documentService';
 import { io } from 'socket.io-client';
 
-
-
 const DocumentDetails = () => {
     const socket = io('http://localhost:5000');
-
     const { id } = useParams();
     const navigate = useNavigate();
     const [document, setDocument] = useState(null);
@@ -15,9 +12,11 @@ const DocumentDetails = () => {
     const [content, setContent] = useState('');
     const [error, setError] = useState(null);
     const [successMessage, setSuccessMessage] = useState(null);
+    const [loading, setLoading] = useState(true);
 
     const location = useLocation();
     const message = location.state?.message;
+
     useEffect(() => {
         const fetchDocument = async () => {
             try {
@@ -27,48 +26,34 @@ const DocumentDetails = () => {
                 setContent(doc.content);
             } catch (error) {
                 setError('Failed to fetch document');
+            } finally {
+                setLoading(false);
             }
         };
         fetchDocument();
     }, [id]);
 
     useEffect(() => {
-
-        // Join the document room
         socket.emit('joinDocument', id);
-
-        // Listen for real-time updates
         socket.on('receiveUpdate', (updatedData) => {
-            if (updatedData.title) {
-                setTitle(updatedData.title);
-            }
-            if (updatedData.content) {
-                setContent(updatedData.content);
-            }
+            setTitle(updatedData.title || title);
+            setContent(updatedData.content || content);
         });
-
-        socket.on('receiveUpdatedTitle', (updatedContent) => {
-
-            setContent(updatedContent);
-
-        });
-        // Cleanup on component unmount
         return () => {
             socket.disconnect();
         };
-    }, [id, socket]);
+    }, [id, title, content]);
 
     const handleUpdate = async () => {
         try {
             await updateDocument(id, { title, content });
             socket.emit('documentUpdate', { documentId: id, title, content });
             setSuccessMessage('Document updated successfully!');
-            navigate(`/document/${id}`);
         } catch (error) {
             setError('Failed to update document');
         }
+        setTimeout(() => navigate('/dashboard'), 3000);
     };
-
 
     const handleDelete = async () => {
         try {
@@ -79,20 +64,20 @@ const DocumentDetails = () => {
         }
     };
 
-    if (error) return <div className="alert alert-danger">{error}</div>;
-    if (!document) return <div>Loading...</div>;
+    if (loading) return <div className="text-center text-gray-500">Loading document...</div>;
 
     return (
-        <>
-            {message && <div className="alert alert-success mt-3 px-4 mx-4 ">{message}</div>}
-            <div className="container mt-5 bg-blue-300 pt-4 pb-8 rounded-lg">
-                <h2 className="mb-4">Document Details</h2>
-                <div className="form-group">
-                    <label htmlFor="title">Title:</label>
+        <div className="min-h-screen bg-gradient-to-r from-blue-500 to-red-400 p-6">
+            <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-4xl mx-auto">
+                {message && <div className="alert alert-success mb-4">{message}</div>}
+                <h2 className="text-3xl font-bold text-gray-800 mb-4">Edit Document</h2>
+                {error && <div className="text-red-600 mb-4">{error}</div>}
+                <div className="mb-4">
+                    <label htmlFor="title" className="block font-semibold">Title:</label>
                     <input
                         type="text"
                         id="title"
-                        className="form-control"
+                        className="w-full p-2 border rounded-lg"
                         value={title}
                         onChange={(e) => {
                             setTitle(e.target.value);
@@ -100,12 +85,11 @@ const DocumentDetails = () => {
                         }}
                     />
                 </div>
-                <div className="form-group mt-3">
-                    <label htmlFor="content">Content:</label>
+                <div className="mb-4">
+                    <label htmlFor="content" className="block font-semibold">Content:</label>
                     <textarea
                         id="content"
-                        className="form-control"
-                        rows="5"
+                        className="w-full p-2 border rounded-lg h-40"
                         value={content}
                         onChange={(e) => {
                             setContent(e.target.value);
@@ -113,15 +97,13 @@ const DocumentDetails = () => {
                         }}
                     />
                 </div>
-                {successMessage && <div className="alert alert-success mt-3">{successMessage}</div>}
-
-                <div className="mt-3">
-                    <button className="btn btn-primary" onClick={handleUpdate}>Update Document</button>
-                    <button className="btn btn-danger ms-2" onClick={handleDelete}>Delete Document</button>
-
+                {successMessage && <div className="text-green-600 mb-4">{successMessage}</div>}
+                <div className="flex gap-4">
+                    <button className="bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700" onClick={handleUpdate}>Save Changes</button>
+                    <button className="bg-red-600 text-white py-2 px-4 rounded-lg hover:bg-red-700" onClick={handleDelete}>Delete</button>
                 </div>
             </div>
-        </>
+        </div>
     );
 };
 

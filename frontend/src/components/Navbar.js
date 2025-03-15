@@ -1,49 +1,52 @@
-import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 
 const Navbar = () => {
     const navigate = useNavigate();
+    const location = useLocation();
     const userString = localStorage.getItem('user');
     const user = userString ? JSON.parse(userString) : null;
-    console.log(user)
+    const [dropdownOpen, setDropdownOpen] = useState(false);
 
     const handleLogout = () => {
-        // Remove user data from local storage
         localStorage.removeItem('user');
-        // Redirect to landing page
         navigate('/');
     };
 
+    // Hide navbar on these routes
+    const hiddenRoutes = ['/', '/login', '/register'];
+    if (hiddenRoutes.includes(location.pathname)) return null;
+
     return (
-        <nav className="navbar navbar-expand-lg navbar-light bg-light">
-            <div className="container-fluid">
-                <Link className="navbar-brand" to="/dashboard"><img src="../assets/logo.jpg" alt="" /> CoCreate </Link>
-                <button className="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                    <span className="navbar-toggler-icon"></span>
-                </button>
-                <div className="collapse navbar-collapse" id="navbarNav">
-                    <ul className="navbar-nav me-auto">
-                        <li className="nav-item">
-                            <Link className="nav-link" to="/dashboard">Dashboard</Link>
-                        </li>
-                    </ul>
-                    {user ? (
-                        <ul className="navbar-nav">
-                            <li className="nav-item">
-                                <button className="btn btn-link nav-link" onClick={handleLogout}>{user.username}  Logout</button>
-                            </li>
-                        </ul>
-                    ) : (
-                        <ul className="navbar-nav">
-                            <li className="nav-item">
-                                <Link className="nav-link" to="/login">Login</Link>
-                            </li>
-                            <li className="nav-item">
-                                <Link className="nav-link" to="/register">Register</Link>
-                            </li>
-                        </ul>
-                    )}
-                </div>
+        <nav className="bg-slate-900 shadow-md py-4 px-6 flex justify-between items-center">
+            <Link to="/dashboard" className="text-2xl font-bold text-blue-600 flex items-center no-underline">
+                CoCreate
+            </Link>
+            <div className="flex items-center space-x-4">
+                <Link className="text-gray-100 hover:text-blue-300 no-underline" to="/dashboard">Dashboard</Link>
+                {user ? (
+                    <div className="relative">
+                        <button
+                            className="text-gray-100 hover:text-blue-300 no-underline"
+                            onClick={() => setDropdownOpen(!dropdownOpen)}
+                        >
+                            {user.username} ▼
+                        </button>
+                        <div className={`absolute right-0 mt-2 w-40 bg-white shadow-lg rounded-lg ${dropdownOpen ? 'block' : 'hidden'}`}>
+                            <button
+                                className="block bg-slate-100 w-full text-center px-2 py-2 text-gray-900 hover:text-blue-600 no-underline rounded-lg"
+                                onClick={handleLogout}
+                            >
+                                Logout
+                            </button>
+                        </div>
+                    </div>
+                ) : (
+                    <>
+                        <Link className="text-gray-700 hover:text-blue-600 no-underline" to="/login">Login</Link>
+                        <Link className="text-gray-700 hover:text-blue-600 no-underline" to="/register">Register</Link>
+                    </>
+                )}
             </div>
         </nav>
     );
