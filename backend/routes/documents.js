@@ -6,7 +6,11 @@ const router = express.Router();
 // Get all documents for the logged-in user
 router.get('/', verifyToken, async (req, res) => {
     try {
-        const documents = await Document.find({ owner: req.user.id });
+        // const documents = await Document.find({ owner: req.user.id });
+        const publicDocuments = await Document.find({ private: false });
+        const privateDocuments = await Document.find({ owner: req.user.id, private: true });
+        const documents = [...publicDocuments, ...privateDocuments];
+        documents.sort((a, b) => b.createdAt - a.createdAt);
         // const documents = await Document.find({});
         res.json(documents);
     } catch (error) {
@@ -33,12 +37,14 @@ router.get('/:id', verifyToken, async (req, res) => {
 
 // Create a new document
 router.post('/', verifyToken, async (req, res) => {
-    const { title, content } = req.body;
+    const { title, content, isPrivate } = req.body;
+    // console.log(req.body);
     try {
         const newDocument = await Document.create({
             title,
             content,
             owner: req.user.id,
+            private: isPrivate
         });
         res.json(newDocument);
     } catch (error) {
@@ -48,11 +54,12 @@ router.post('/', verifyToken, async (req, res) => {
 
 // Update a document
 router.put('/:id', verifyToken, async (req, res) => {
-    const { title, content } = req.body;
+    const { title, content, private } = req.body;
+    // console.log(req.body);
     try {
         const updatedDocument = await Document.findByIdAndUpdate(
             req.params.id,
-            { title, content },
+            { title, content, private },
             { new: true }
         );
         res.json(updatedDocument);
@@ -63,6 +70,10 @@ router.put('/:id', verifyToken, async (req, res) => {
 
 // Delete a document
 router.delete('/:id', verifyToken, async (req, res) => {
+    const document_user = await Document.findById(req.params.id);
+    if (document_user.owner.toString() !== req.user.id) {
+        return res.status(403).json({ message: 'Not authorized' });
+    }
     try {
         await Document.findByIdAndDelete(req.params.id);
         res.json({ message: 'Document deleted' });
@@ -71,4 +82,8 @@ router.delete('/:id', verifyToken, async (req, res) => {
     }
 });
 
+
+
 module.exports = router;
+
+

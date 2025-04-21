@@ -41,3 +41,4 @@ export const deleteDocument = async (id) => {
     });
     return data;
 };
+

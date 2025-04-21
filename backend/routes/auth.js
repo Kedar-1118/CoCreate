@@ -74,7 +74,7 @@ router.post('/verify-otp', async (req, res) => {
       return res.status(400).json({ message: 'Invalid OTP' });
     }
 
-    // const hashedPassword = await bcrypt.hash(password, 10);
+    // const hashedPassword = await bcrypt.hash(password, 10); We don't need to separtly encrypt the password it is encrypted by default in mongo while uploading
     const newUser = new User({ name, email: email.toLowerCase(), password });
     await newUser.save();
 
@@ -120,8 +120,6 @@ router.post('/login', async (req, res) => {
     if (!user) return res.status(400).json({ message: 'Invalid Email' });
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    console.log(hashedPassword);
-    console.log(user.password);
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: 'Invalid password' });
 

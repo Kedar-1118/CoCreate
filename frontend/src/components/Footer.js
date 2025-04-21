@@ -1,35 +1,21 @@
 import React from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 
 const Footer = () => {
     const location = useLocation();
-    const navigate = useNavigate();
-
-    // Pages where Logout button should be hidden
     const hiddenRoutes = ["/", "/register", "/login"];
 
-    const handleLogout = () => {
-        localStorage.removeItem("token"); // Clear token
-        navigate("/login"); // Redirect to login
-    };
+    if (hiddenRoutes.includes(location.pathname)) return null;
 
     return (
-        <div>
-            {!hiddenRoutes.includes(location.pathname) && (
-                <footer className="bg-gray-900 text-white h-16 w-full fixed bottom-0 left-0 flex justify-between items-center px-6">
-                    <p>&copy; {new Date().getFullYear()} YourApp. All rights reserved.</p>
-
-
-                    <button
-                        onClick={handleLogout}
-                        className="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded"
-                    >
-                        Logout
-                    </button>
-
-                </footer>
-            )}
-        </div>
+        <footer className="bg-slate-900 text-gray-300 py-4 w-full flex justify-center items-center shadow-inner  bottom-0 z-50">
+            <div className="text-center text-sm sm:text-base">
+                <p>
+                    &copy; {new Date().getFullYear()} <span className="font-bold text-white">CoCreate</span> — Crafted for collaboration ✨
+                </p>
+                <p className="text-xs text-slate-500 mt-1">Empowering teams, one idea at a time.</p>
+            </div>
+        </footer>
     );
 };
 
