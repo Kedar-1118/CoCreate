@@ -12,7 +12,7 @@ const Login = () => {
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
-            const { data } = await axios.post('http://localhost:5000/api/auth/login', { email, password });
+            const { data } = await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/login`, { email, password });
             localStorage.setItem('user', JSON.stringify({ username: data.username, token: data.token, expiryDate: 2 }));
 
             navigate('/dashboard');

@@ -17,7 +17,7 @@ const DocumentForm = () => {
         try {
             const user = JSON.parse(localStorage.getItem('user'));
             const token = user ? user.token : null;
-            const { data } = await axios.post('http://localhost:5000/api/documents', { title, content, isPrivate }, {
+            const { data } = await axios.post(`${process.env.REACT_APP_API_URL}/api/documents`, { title, content, isPrivate }, {
                 headers: {
                     Authorization: `Bearer ${token}`,
                 },

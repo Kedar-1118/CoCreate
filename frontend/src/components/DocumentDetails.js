@@ -5,7 +5,7 @@ import { io } from 'socket.io-client';
 import { motion } from 'framer-motion';
 
 const DocumentDetails = () => {
-    const socket = io('http://localhost:5000');
+    const socket = io(process.env.REACT_APP_API_URL);
     const { id } = useParams();
     const navigate = useNavigate();
     const location = useLocation();

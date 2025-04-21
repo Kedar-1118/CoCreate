@@ -13,7 +13,7 @@ const MyDocs = () => {
             try {
                 const user = JSON.parse(localStorage.getItem('user'));
                 const token = user ? user.token : null;
-                const { data } = await axios.get('http://localhost:5000/api/documents/user', {
+                const { data } = await axios.get(`${process.env.REACT_APP_API_URL}/api/documents/user`, {
                     headers: {
                         Authorization: `Bearer ${token}`,
                     },

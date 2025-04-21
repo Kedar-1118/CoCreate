@@ -20,7 +20,7 @@ const Register = () => {
         setError('');
         setLoading(true);
         try {
-            await axios.post('http://localhost:5000/api/auth/send-otp', { email });
+            await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/send-otp`, { email });
             setOtpSent(true);
             setSuccessMessage('✅ OTP sent to your email.');
         } catch (error) {
@@ -35,7 +35,7 @@ const Register = () => {
         setError('');
         setLoading(true);
         try {
-            const { data } = await axios.post('http://localhost:5000/api/auth/verify-otp', { name, email, password, otp });
+            const { data } = await axios.post(`${process.env.REACT_APP_API_URL}/api/auth/verify-otp`, { name, email, password, otp });
             localStorage.setItem('token', data.token);
             setSuccessMessage('🎉 Registration successful! Redirecting...');
             setTimeout(() => navigate('/login'), 2500);
