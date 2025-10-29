@@ -15,7 +15,7 @@ const server = http.createServer(app);
 
 // Configure CORS for HTTP requests
 app.use(cors({
-    origin: 'http://localhost:3000',
+    origin: process.env.Cors,
     methods: ['GET', 'POST', 'PUT', 'DELETE'], // Allowed HTTP methods
     allowedHeaders: ['Content-Type', 'Authorization'] // Allowed headers
 }));
